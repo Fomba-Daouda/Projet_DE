@@ -48,6 +48,26 @@ server <- function(input, output, session) {
     # 
     # tokenized_rem_stopwordsT <- tokenizedT %>%
     #   anti_join(stop_words)
+
+    sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
+    labMT <- sentiments %>%
+      select(word, happs)
+    
+    ### Quick sentiment analysis
+    
+    allsentimentT <- df2 %>%
+      select(value) %>%
+      unnest_tokens(word, value) %>%
+      anti_join(stop_words) %>%
+      inner_join(labMT, by = "word") %>%
+      group_by(word) %>%
+      summarize(sentiment = mean(happs)) %>%
+      arrange(desc(sentiment)) %>%
+      mutate("sentiment2" = sentiment-5.372 )
+    
+    bottomsent <- head(arrange(allsentimentT,sentiment2), n = 50)
+    
+    DT::datatable(bottomsent)
     
   })
   # fin data table---------Armel------------------------------
