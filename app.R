@@ -9,6 +9,16 @@ library(wordcloud)
 #Ajout partie serveur
 server <- function(input, output, session) {
 
+  # Chargement du dataset------------------Armel--------- 
+  filedata <- reactive({
+    infile <- input$file
+    if (is.null(infile)){
+      return(NULL)   
+    }
+    scan(infile$datapath, character(0), sep=".",quote=NULL)
+  })
+  #-----------------Fin chargement------Armel----------------
+
   #Debut Trigrams--------------------Armel
   output$triplot <- renderPlot({
 
@@ -24,6 +34,7 @@ server <- function(input, output, session) {
   })
   
   #Fin trigrams -------------Armel----
+
 }
 
 
