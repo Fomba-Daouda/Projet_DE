@@ -27,6 +27,31 @@ server <- function(input, output, session) {
   })
   #-----------------Fin chargement------Armel----------------
 
+  ##----------Data table -----------Armel--------------------
+  output$tbneg <- DT::renderDataTable({
+    
+    if (is.null(input$file)){
+      return(NULL)      
+    }
+    
+    LookForKeyword <- c(input$keyword)
+    
+    df <- filedata()
+    df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
+    
+    # tokenizedT <- df2 %>%
+    #   select(value) %>%
+    #   unnest_tokens(word, value) %>%
+    #   count(word, sort = TRUE) %>%
+    #   ungroup()
+    # tokenizedT
+    # 
+    # tokenized_rem_stopwordsT <- tokenizedT %>%
+    #   anti_join(stop_words)
+    
+  })
+  # fin data table---------Armel------------------------------
+
   #Debut Trigrams--------------------Armel
   output$triplot <- renderPlot({
 
@@ -55,8 +80,6 @@ server <- function(input, output, session) {
     
   })
   #Fin trigrams -------------Armel----
-
-
 
 }
 
