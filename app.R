@@ -1,0 +1,6 @@
+library(shinythemes)
+library(tidyverse)
+library(DT)
+library(dplyr)
+library(tidytext)
+library(wordcloud)
