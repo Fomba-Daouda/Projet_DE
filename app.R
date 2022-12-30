@@ -44,7 +44,7 @@ server <- function(input, output, session) {
       unnest_tokens(ngram, value, token = "ngrams", n = 3) %>%
       count(ngram, sort = TRUE) %>%
       ungroup() %>%
-      top_n(25)
+      top_n(25) #Paramètre à ajouter dynamiquement sur la vue
     
     p6 <- ggplot(trigrams_15, aes(x=reorder(ngram, -n), y=n)) +
       geom_col(show.legend = FALSE) +
