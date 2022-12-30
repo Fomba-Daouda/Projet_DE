@@ -72,6 +72,28 @@ server <- function(input, output, session) {
   })
   # fin data table---------Armel------------------------------
 
+  ##Debut data table-------Armel------------------------------
+  output$bigramsT <- DT::renderDataTable({
+    
+    if (is.null(input$file)){
+      return(NULL)      
+    }
+    
+    LookForKeyword <- c(input$keyword)
+    
+    df <- filedata()
+    df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
+    
+    bigrams <- df2 %>%
+      select(value) %>%
+      unnest_tokens(ngram, value, token = "ngrams", n = 2) %>%
+      count(ngram, sort = TRUE) %>%
+      ungroup()
+
+    DT::datatable(bigrams)
+  })  
+  # Fin data table--------------------Armel--------------------------------
+
   #Debut Trigrams--------------------Armel
   output$triplot <- renderPlot({
 
