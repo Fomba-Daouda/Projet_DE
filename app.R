@@ -9,6 +9,21 @@ library(wordcloud)
 #Ajout partie serveur
 server <- function(input, output, session) {
 
+  #Debut Trigrams--------------------Armel
+  output$triplot <- renderPlot({
+
+    if (is.null(input$file)){
+      return(NULL)      
+    }
+    
+    LookForKeyword <- c(input$keyword)
+    
+    df <- filedata()
+    df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
+    
+  })
+  
+  #Fin trigrams -------------Armel----
 }
 
 
