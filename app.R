@@ -17,6 +17,15 @@ server <- function(input, output, session) {
     }
     scan(infile$datapath, character(0), sep=".",quote=NULL)
   })
+
+  #Affichage des données
+  output$tb <- DT::renderDataTable({
+    LookForKeyword <- c(input$keyword)
+    df <- filedata() 
+    df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
+    DT::datatable(df2)
+    
+  })
   #-----------------Fin chargement------Armel----------------
 
   #Debut Trigrams--------------------Armel
