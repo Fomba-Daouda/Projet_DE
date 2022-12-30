@@ -51,7 +51,6 @@ server <- function(input, output, session) {
       coord_flip() +
       ylab("frequency") +
       xlab("ngram")
-    
     p6
     
   })
