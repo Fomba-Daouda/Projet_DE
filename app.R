@@ -1,31 +1,20 @@
 ## Installation des libraries
 
 library(shinythemes)
-library(dplyr)
 library(tidyverse)
-library(tidytext)
 library(DT)
+library(dplyr)
+library(tidytext)
+library(wordcloud)
 
 ## Début de l'interface
 ui <- fluidPage(
   theme = shinythemes::shinytheme("journal"),  
   titlePanel("Drag-and-drop textual analysis"),
   tags$div(class="header", checked=NA,
-           tags$p("Upload a text file and choose a keyword below to run an exploratory textual and sentiment analysis")),
-  hr(),
-  
+     tags$p("Upload a text file and choose a keyword below to run an exploratory textual and sentiment analysis")),
+  hr()
 )
-
-
-server <- function(input, output, session) {}
-
-
-library(shinythemes)
-library(tidyverse)
-library(DT)
-library(dplyr)
-library(tidytext)
-library(wordcloud)
 
 
 #Ajout partie serveur
@@ -146,7 +135,5 @@ server <- function(input, output, session) {
   #Fin trigrams -------------Armel----
 }
 
-
 #Partie ui
->>>>>>> origin/main
 shinyApp(ui = ui, server = server)
