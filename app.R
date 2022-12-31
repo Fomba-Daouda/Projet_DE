@@ -5,7 +5,7 @@ library(tidyverse)
 library(DT)
 library(dplyr)
 library(tidytext)
-library(wordcloud)
+library(DT)
 
 ## Début de l'interface
 ui <- fluidPage(
@@ -137,3 +137,4 @@ server <- function(input, output, session) {
 
 #Partie ui
 shinyApp(ui = ui, server = server)
+
