@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ## Installation des libraries
 
 library(shinythemes)
@@ -21,8 +20,6 @@ ui <- fluidPage(
 server <- function(input, output, session) {}
 
 
-
-=======
 library(shinythemes)
 library(tidyverse)
 library(DT)
@@ -147,7 +144,6 @@ server <- function(input, output, session) {
     
   })
   #Fin trigrams -------------Armel----
-
 }
 
 
