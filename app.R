@@ -191,6 +191,41 @@ server <- function(input, output, session) {
   })  
   # Fin data table--------------------Armel--------------------------------
 
+   # Debut plot----------Reda-----------------------------------------------
+   
+
+
+   
+  #Fin plot ---------------------Reda---------------------------------
+  # trigramsT-----------DAOUDA------------------------------
+  
+  output$trigramsT <- DT::renderDataTable({
+    
+    if (is.null(input$file)){
+      return(NULL)      
+    }
+    
+    library(dplyr)
+    library(tidyverse)
+    library(tidytext)
+    library(wordcloud)
+    
+    LookForKeyword <- c(input$keyword)
+    
+    df <- filedata()
+    df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
+    
+    trigrams <- df2 %>%
+      select(value) %>%
+      unnest_tokens(ngram, value, token = "ngrams", n = 3) %>%
+      count(ngram, sort = TRUE) %>%
+      ungroup()
+    
+    DT::datatable(trigrams)
+    
+  })
+  
+  #Fin Trigrams--------------------Daouda
   #Debut Trigrams--------------------Armel
   output$triplot <- renderPlot({
 
