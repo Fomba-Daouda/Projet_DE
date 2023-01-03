@@ -20,6 +20,6 @@ git push origin armelTest
 
 git checkout main
 
-git pull origin armelTest
+git merge armelTest
 
 git diff armelTest..main
