@@ -14,6 +14,35 @@ ui <- fluidPage(
   tags$div(class="header", checked=NA,
      tags$p("Upload a text file and choose a keyword below to run an exploratory textual and sentiment analysis")),
   hr()
+
+sidebarLayout(
+     
+     # Sidebar with a slider and selection inputs
+ ## SidePannel--------------------Reda-----------------------
+      
+  #Fin SidePannel -------------Reda------------------
+  #Début mainPannel ----------------------Daouda-------------------------
+    mainPanel(
+      
+      h4("Sentences", align = "center"),
+      DTOutput("tb"),
+      h4("Most negative and most positive words", align = "center"),
+      plotOutput("p_sentT"),
+      h4("Top 50 positive words", align = "center"),
+      DTOutput("tbpos"),
+      h4("Top 50 negative words", align = "center"),
+      DTOutput("tbneg"),
+      h4("Top bigrams", align = "center"),
+      DTOutput("bigramsT"),
+      h4("Top bigrams", align = "center"),
+      plotOutput("biplot"),
+      h4("Top trigrams", align = "center"),
+      DTOutput("trigramsT"),
+      h4("Top trigrams", align = "center"),
+      plotOutput("triplot")
+    )
+ #Fin mainPanel-------------------Daouda-----------------------------
+)
 )
 
 
