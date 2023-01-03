@@ -7,3 +7,7 @@ git checkout -b armelTest
 git pull origin main
 
 git status
+
+git add .
+
+git commit -m "Ajout du fichier des commandes utilisées"
