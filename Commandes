@@ -1,0 +1,9 @@
+git clone https://github.com/Fomba-Daouda/Projet_DE.git
+
+git branch -a
+
+git checkout -b armelTest
+
+git pull origin main
+
+git status
