@@ -22,4 +22,6 @@ git checkout main
 
 git merge armelTest
 
+git push
+
 git diff armelTest..main
