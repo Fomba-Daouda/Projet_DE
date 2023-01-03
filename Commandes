@@ -14,4 +14,12 @@ git commit -m "Ajout du fichier des commandes utilisées"
 
 git push --set-upstream origin armelTest
 
-créer Personal Acces Token (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) 
+créer Personal Acces Token (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)
+
+git push origin armelTest
+
+git checkout main
+
+git pull origin armelTest
+
+git diff armelTest..main
