@@ -111,7 +111,64 @@ server <- function(input, output, session) {
     
   })
   # fin data table---------Armel------------------------------
-
+   #debut plot --------------Daouda--------------
+  output$p_sentT <- renderPlot({
+    
+    if (is.null(input$file)){
+      return(NULL)      
+    }
+    
+    library(dplyr)
+    library(tidyverse)
+    library(tidytext)
+    
+    LookForKeyword <- c(input$keyword)
+    
+    df <- filedata()
+    df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
+    
+    sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
+    labMT <- sentiments %>%
+      select(word, happs)
+    
+    ### Quick sentiment analysis
+    
+    allsentimentT <- df2 %>%  
+      select(value) %>%
+      unnest_tokens(word, value) %>%
+      anti_join(stop_words) %>%
+      inner_join(labMT, by = "word") %>%
+      group_by(word) %>%
+      summarize(sentiment = mean(happs)) %>%
+      arrange(desc(sentiment)) %>%
+      mutate("sentiment2" = sentiment-5.372 )
+    
+    # Bind 10 most positive terms and 10 most negative terms
+    
+    bottomsentT <- allsentimentT %>%
+      top_n(-10) 
+    topsentT <- allsentimentT %>%
+      top_n(10) 
+    sentimentT <- bind_rows(bottomsentT,topsentT) %>%
+      arrange(desc(sentiment2)) %>%
+      distinct() # remove duplicates
+    sentimentT
+    
+    p_sentT <- ggplot(sentimentT, aes(x= reorder(word, -sentiment2), 
+                                      y = sentiment2, 
+                                      fill = sentiment2 > 0)) + #this is midpoint of labMT sentiment dictionary
+      geom_col(show.legend = FALSE) +
+      coord_flip() +
+      ylab("sentiment") +
+      xlab("word") + 
+      scale_y_continuous(limits=c(-5, 5)) +
+      scale_fill_manual(values=c(input$neg,input$pos))
+    
+    p_sentT
+    
+  })
+  
+  ## Fin plot Daouda
   ##Debut data table-------Armel------------------------------
   output$bigramsT <- DT::renderDataTable({
     
