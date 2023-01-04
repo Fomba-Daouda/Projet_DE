@@ -19,7 +19,30 @@ sidebarLayout(
      
      # Sidebar with a slider and selection inputs
  ## SidePannel--------------------Reda-----------------------
-      
+      sidebarPanel(
+        fileInput("file", "Upload your txt file"),
+        hr(),
+        textInput("keyword", "Search for a keyword", ""),
+        hr(),
+        tags$div(class="header", checked=NA,
+                 tags$p("Once you've uploaded a document, scroll down to see contextual sentences, sentiment analysis and top bi- and trigrams.")),
+        hr(),
+        textInput("neg", "Change negative color", "red"),
+        hr(),
+        textInput("pos", "Change positive color", "blue"),
+        hr(),
+        tags$div(class="header", checked=NA,
+            tags$p("A dataset you might be curious to explore."),
+            tags$a(href="https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/trumpspeeches.txt", "Trump's campaign speeches.")),
+        tags$br(),
+         tags$div(class="header", checked=NA,
+                  tags$p("Have a CSV file for sentiment analysis?"),
+                  tags$a(href="https://storybench.shinyapps.io/csvanalysis/", "Try out my other drag-and-drop app.")),
+         hr(),
+         tags$div(class="header", checked=NA,
+                  tags$p("This analysis uses the R package 'tidytext' and the 'labMT' sentiment dictionary from Andy Reagan. Created by Aleszu Bajak."))
+            
+    ),
   #Fin SidePannel -------------Reda------------------
   #Début mainPannel ----------------------Daouda-------------------------
     mainPanel(
