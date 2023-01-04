@@ -269,13 +269,44 @@ server <- function(input, output, session) {
     DT::datatable(bigrams)
   })  
   # Fin data table--------------------Armel--------------------------------
+# Debut plot----------Reda-----------------------------------------------
+  output$biplot <- renderPlot({
+    
+    if (is.null(input$file)){
+      return(NULL)      
+    }
+    
+    library(dplyr)
+    library(tidyverse)
+    library(tidytext)
+    library(wordcloud)
+    
+    LookForKeyword <- c(input$keyword)
+    
+    df <- filedata()
+    df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
+    
+    bigrams_15 <- df2 %>%
+      select(value) %>%
+      unnest_tokens(ngram, value, token = "ngrams", n = 2) %>%
+      count(ngram, sort = TRUE) %>%
+      ungroup() %>%
+      top_n(25)
+    
+    p7 <- ggplot(bigrams_15, aes(x=reorder(ngram, -n), y=n)) +
+      geom_col(show.legend = FALSE) +
+      coord_flip() +
+      ylab("frequency") +
+      xlab("ngram")
+    
+    p7
+    
+  })
 
-   # Debut plot----------Reda-----------------------------------------------
-   
-
-
-   
   #Fin plot ---------------------Reda---------------------------------
+  
+   
+  
   # trigramsT-----------DAOUDA------------------------------
   
   output$trigramsT <- DT::renderDataTable({
