@@ -89,7 +89,63 @@ server <- function(input, output, session) {
     DT::datatable(df2)
   })
   #-----------------Fin chargement------Armel----------------
+  #Data table --------------Reda-------------
+          output$tbpos <- DT::renderDataTable({
 
+            if (is.null(input$file)){
+              return(NULL)      
+            }
+            
+            library(dplyr)
+            library(tidyverse)
+            library(tidytext)
+
+            LookForKeyword <- c(input$keyword)
+
+            df <- filedata()
+            df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
+            
+            # tokenizedT <- df2 %>%
+            #   select(value) %>%
+            #   unnest_tokens(word, value) %>%
+            #   count(word, sort = TRUE) %>%
+            #   ungroup()
+            # tokenizedT
+            # 
+            # tokenized_rem_stopwordsT <- tokenizedT %>%
+            #   anti_join(stop_words)
+            
+            sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
+            labMT <- sentiments %>%
+              select(word, happs)
+            
+            ### Quick sentiment analysis
+            
+            allsentimentT <- df2 %>%  
+              select(value) %>%
+              unnest_tokens(word, value) %>%
+              anti_join(stop_words) %>%
+              inner_join(labMT, by = "word") %>%
+              group_by(word) %>%
+              summarize(sentiment = mean(happs)) %>%
+              arrange(desc(sentiment)) %>%
+              mutate("sentiment2" = sentiment-5.372 )
+            
+            # Bind 10 most positive terms and 10 most negative terms
+            
+            topsent <- allsentimentT %>%
+              top_n(50) 
+
+            DT::datatable(topsent)
+            
+            # wcT <- wordcloud(words = tokenized_rem_stopwordsT$word, freq = tokenized_rem_stopwordsT$n, min.freq = 1,
+            #                  max.words=100, random.order=FALSE, rot.per=0.15,
+            #                  colors=brewer.pal(8, "RdGy"))
+            # wcT
+
+          })
+          
+  ##--------Fin Data table--------Reda
   ##----------Data table -----------Armel--------------------
   output$tbneg <- DT::renderDataTable({
     
