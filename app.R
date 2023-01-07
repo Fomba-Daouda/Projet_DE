@@ -6,6 +6,9 @@ library(DT)
 library(dplyr)
 library(tidytext)
 library(wordcloud)
+library(tensorflow)
+library(keras)
+library(tfdatasets)
 
 ## Début de l'interface
 ui <- fluidPage(
