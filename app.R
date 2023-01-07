@@ -10,50 +10,43 @@ library(wordcloud)
 ## Début de l'interface
 ui <- fluidPage(
   theme = shinythemes::shinytheme("journal"),  
-  titlePanel("Drag-and-drop textual analysis"),
+  titlePanel("Analyse textuelle"),
   tags$div(class="header", checked=NA,
-    tags$p("Upload a text file and choose a keyword below to run an exploratory textual and sentiment analysis")
+    tags$p("Téléchargez un fichier texte/csv et choisissez un mot-clé ci-dessous pour exécuter une analyse exploratoire du texte et des sentiments")
   ),
   hr(),
   sidebarLayout(
     # Sidebar with a slider and selection inputs
     ## SidePannel--------------------Reda-----------------------
     sidebarPanel(
-      fileInput("file", "Upload your txt file"),
+      fileInput("file", "Téléchargez votre fichier txt/csv, vous pouvez glisser-déposer"),
       hr(),
-      textInput("keyword", "Search for a keyword", ""),
-      hr(),
-      tags$div(class="header", checked=NA,
-                tags$p("Once you've uploaded a document, scroll down to see contextual sentences, sentiment analysis and top bi- and trigrams.")),
-      hr(),
-      textInput("neg", "Change negative color", "red"),
-      hr(),
-      textInput("pos", "Change positive color", "blue"),
+      textInput("keyword", "Rechercher un mot-clé", ""),
       hr(),
       tags$div(class="header", checked=NA,
-        tags$p("A dataset you might be curious to explore."),
-        tags$a(href="https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/trumpspeeches.txt", "Trump's campaign speeches.")
+        tags$p("Une fois que vous avez téléchargé un document, faites défiler vers le bas pour voir les phrases contextuelles, l'analyse des sentiments et les principaux bi- et trigrammes.")
       ),
+      hr(),
+      textInput("neg", "Changer la couleur négative", "red"),
+      hr(),
+      textInput("pos", "Changer la couleur positive", "blue"),
+      hr(),
       tags$br(),
-      tags$div(class="header", checked=NA,
-        tags$p("Have a CSV file for sentiment analysis?"),
-        tags$a(href="https://storybench.shinyapps.io/csvanalysis/", "Try out my other drag-and-drop app.")
-      ),
       hr(),
-      tags$div(class="header", checked=NA,
-        tags$p("This analysis uses the R package 'tidytext' and the 'labMT' sentiment dictionary from Andy Reagan. Created by Aleszu Bajak.")
-      ) 
+      #tags$div(class="header", checked=NA,
+        #tags$p("This analysis uses the R package 'tidytext' and the 'labMT' sentiment dictionary from Andy Reagan. Created by Aleszu Bajak.")
+      #) 
     ),
     #Fin SidePannel -------------Reda------------------
     #Début mainPannel ----------------------Daouda-------------------------
     mainPanel(
       h4("Sentences", align = "center"),
       DTOutput("tb"),
-      h4("Most negative and most positive words", align = "center"),
+      h4("Les mots les plus négatifs et les plus positifs", align = "center"),
       plotOutput("p_sentT"),
-      h4("Top 50 positive words", align = "center"),
+      h4("Top 50 des mots positifs", align = "center"),
       DTOutput("tbpos"),
-      h4("Top 50 negative words", align = "center"),
+      h4("Top 50 des mots négatifs", align = "center"),
       DTOutput("tbneg"),
       h4("Top bigrams", align = "center"),
       DTOutput("bigramsT"),
@@ -62,7 +55,10 @@ ui <- fluidPage(
       h4("Top trigrams", align = "center"),
       DTOutput("trigramsT"),
       h4("Top trigrams", align = "center"),
-      plotOutput("triplot")
+      plotOutput("triplot"),
+      h4("Nuage de mots", align = "center"),
+      plotOutput("nuage")
+      
     )
     #Fin mainPanel-------------------Daouda-----------------------------
   )
@@ -101,15 +97,15 @@ server <- function(input, output, session) {
     df <- filedata()
     df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
     
-    # tokenizedT <- df2 %>%
-    #   select(value) %>%
-    #   unnest_tokens(word, value) %>%
-    #   count(word, sort = TRUE) %>%
-    #   ungroup()
-    # tokenizedT
-    # 
-    # tokenized_rem_stopwordsT <- tokenizedT %>%
-    #   anti_join(stop_words)
+    tokenizedT <- df2 %>%
+      select(value) %>%
+      unnest_tokens(word, value) %>%
+      count(word, sort = TRUE) %>%
+      ungroup()
+    tokenizedT
+    
+    tokenized_rem_stopwordsT <- tokenizedT %>%
+      anti_join(stop_words)
     
     sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
     labMT <- sentiments %>%
@@ -128,16 +124,22 @@ server <- function(input, output, session) {
       mutate("sentiment2" = sentiment-5.372 )
     
     # Bind 10 most positive terms and 10 most negative terms
+
+    output$nuage <- renderPlot({
+      wordcloud(words = tokenized_rem_stopwordsT$word, tokenized_rem_stopwordsT$n, min.freq = 2,
+      max.words=100, random.order=FALSE, rot.per=0.40, 
+      colors=brewer.pal(8, "Dark2"))
+    })
     
     topsent <- allsentimentT %>%
       top_n(50) 
 
     DT::datatable(topsent)
     
-    # wcT <- wordcloud(words = tokenized_rem_stopwordsT$word, freq = tokenized_rem_stopwordsT$n, min.freq = 1,
-    #                  max.words=100, random.order=FALSE, rot.per=0.15,
-    #                  colors=brewer.pal(8, "RdGy"))
-    # wcT
+    #wcT <- wordcloud(words = tokenized_rem_stopwordsT$word, freq = tokenized_rem_stopwordsT$n, min.freq = 1,
+     # max.words=100, random.order=FALSE, rot.per=0.15,
+      #colors=brewer.pal(8, "RdGy")
+    #)
 
   })
           
@@ -154,15 +156,15 @@ server <- function(input, output, session) {
     df <- filedata()
     df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
     
-    # tokenizedT <- df2 %>%
-    #   select(value) %>%
-    #   unnest_tokens(word, value) %>%
-    #   count(word, sort = TRUE) %>%
-    #   ungroup()
-    # tokenizedT
-    # 
-    # tokenized_rem_stopwordsT <- tokenizedT %>%
-    #   anti_join(stop_words)
+    tokenizedT <- df2 %>%
+      select(value) %>%
+      unnest_tokens(word, value) %>%
+      count(word, sort = TRUE) %>%
+      ungroup()
+    tokenizedT
+    
+    tokenized_rem_stopwordsT <- tokenizedT %>%
+      anti_join(stop_words)
 
     sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
     labMT <- sentiments %>%
