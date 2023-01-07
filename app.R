@@ -137,6 +137,27 @@ ui <- dashboardPage(skin="green",
                     Les ensembles de formation et de test sont équilibrés , ce qui signifie qu'ils contiennent un nombre égal d'avis positifs et négatifs.", style="color: royalblue"
                   )
                 )
+              ),
+              wellPanel(
+                box(width = 12,
+                  column(12,
+                    column(5,
+                      box(width = 12, title = "Paramètres du réseau de neurones",
+                        verbatimTextOutput("summary")
+                      )
+                    ),
+                    column(3,
+                      box(width = 12, title = "Évaluer le modèle",
+                        verbatimTextOutput("evaluate")
+                      )
+                    ),
+                    column(4,
+                      box(width = 12, title = "Graphe de précision et de perte au fil du temps",
+                        plotOutput("precision")
+                      )
+                    )
+                  )
+                )
               )
             )
           )
@@ -517,6 +538,96 @@ server <- function(input, output, session) {
     output_mode = "int",
     output_sequence_length = sequence_length
   )
+
+  # Make a text-only dataset (without labels), then call adapt
+  train_text <- raw_train_ds %>%
+    dataset_map(function(text, label) text)
+  vectorize_layer %>% adapt(train_text)
+
+  vectorize_text <- function(text, label) {
+    text <- tf$expand_dims(text, -1L)
+    list(vectorize_layer(text), label)
+  }
+
+  # retrieve a batch (of 32 reviews and labels) from the dataset
+  batch <- reticulate::as_iterator(raw_train_ds) %>%
+    reticulate::iter_next()
+  first_review <- as.array(batch[[1]][1])
+  first_label <- as.array(batch[[2]][1])
+  #print(vectorize_text(first_review, first_label))
+
+  train_ds <- raw_train_ds %>% dataset_map(vectorize_text)
+  val_ds <- raw_val_ds %>% dataset_map(vectorize_text)
+  test_ds <- raw_test_ds %>% dataset_map(vectorize_text)
+
+  AUTOTUNE <- tf$data$AUTOTUNE
+
+  train_ds <- train_ds %>%
+    dataset_cache() %>%
+    dataset_prefetch(buffer_size = AUTOTUNE)
+  val_ds <- val_ds %>%
+    dataset_cache() %>%
+    dataset_prefetch(buffer_size = AUTOTUNE)
+  test_ds <- test_ds %>%
+    dataset_cache() %>%
+    dataset_prefetch(buffer_size = AUTOTUNE)
+
+  #Créer le modèle
+  embedding_dim <- 16
+  model <- keras_model_sequential() %>%
+  layer_embedding(max_features + 1, embedding_dim) %>%
+  layer_dropout(0.2) %>%
+  layer_global_average_pooling_1d() %>%
+  layer_dropout(0.2) %>%
+  layer_dense(1)
+  summary(model)
+
+  output$summary <- renderPrint({
+    summary(model)
+  })
+
+  #Fonction de perte et optimiseur
+  model %>% compile(
+    loss = loss_binary_crossentropy(from_logits = TRUE),
+    optimizer = 'adam',
+    metrics = metric_binary_accuracy(threshold = 0)
+  )
+
+  #Former le modèle
+  epochs <- 10
+  history <- model %>%
+  fit(
+    train_ds,
+    validation_data = val_ds,
+    epochs = epochs
+  )
+
+  #Évaluer le modèle
+  model %>% evaluate(test_ds)
+  output$evaluate <- renderPrint({
+    model %>% evaluate(test_ds)
+  })
+
+  output$precision <- renderPlot({
+    plot(history)
+  })
+
+  plot(history)
+
+  #Export the model
+  export_model <- keras_model_sequential() %>%
+  vectorize_layer() %>%
+  model() %>%
+  layer_activation(activation = "sigmoid")
+
+  export_model %>% compile(
+    loss = loss_binary_crossentropy(from_logits = FALSE),
+    optimizer = "adam",
+    metrics = 'accuracy'
+  )
+
+  # Test it with `raw_test_ds`, which yields raw strings
+  export_model %>% evaluate(raw_test_ds)
 
   #------------Ajout du modèle Fin--------------#
 }
