@@ -5,48 +5,47 @@ library(tidyverse)
 library(DT)
 library(dplyr)
 library(tidytext)
-library(DT)
+library(wordcloud)
 
 ## Début de l'interface
 ui <- fluidPage(
   theme = shinythemes::shinytheme("journal"),  
   titlePanel("Drag-and-drop textual analysis"),
   tags$div(class="header", checked=NA,
-     tags$p("Upload a text file and choose a keyword below to run an exploratory textual and sentiment analysis")),
-  hr()
-
-sidebarLayout(
-     
-     # Sidebar with a slider and selection inputs
- ## SidePannel--------------------Reda-----------------------
-      sidebarPanel(
-        fileInput("file", "Upload your txt file"),
-        hr(),
-        textInput("keyword", "Search for a keyword", ""),
-        hr(),
-        tags$div(class="header", checked=NA,
-                 tags$p("Once you've uploaded a document, scroll down to see contextual sentences, sentiment analysis and top bi- and trigrams.")),
-        hr(),
-        textInput("neg", "Change negative color", "red"),
-        hr(),
-        textInput("pos", "Change positive color", "blue"),
-        hr(),
-        tags$div(class="header", checked=NA,
-            tags$p("A dataset you might be curious to explore."),
-            tags$a(href="https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/trumpspeeches.txt", "Trump's campaign speeches.")),
-        tags$br(),
-         tags$div(class="header", checked=NA,
-                  tags$p("Have a CSV file for sentiment analysis?"),
-                  tags$a(href="https://storybench.shinyapps.io/csvanalysis/", "Try out my other drag-and-drop app.")),
-         hr(),
-         tags$div(class="header", checked=NA,
-                  tags$p("This analysis uses the R package 'tidytext' and the 'labMT' sentiment dictionary from Andy Reagan. Created by Aleszu Bajak."))
-            
+    tags$p("Upload a text file and choose a keyword below to run an exploratory textual and sentiment analysis")),
+  hr(),
+  sidebarLayout(
+    # Sidebar with a slider and selection inputs
+    ## SidePannel--------------------Reda-----------------------
+    sidebarPanel(
+      fileInput("file", "Upload your txt file"),
+      hr(),
+      textInput("keyword", "Search for a keyword", ""),
+      hr(),
+      tags$div(class="header", checked=NA,
+                tags$p("Once you've uploaded a document, scroll down to see contextual sentences, sentiment analysis and top bi- and trigrams.")),
+      hr(),
+      textInput("neg", "Change negative color", "red"),
+      hr(),
+      textInput("pos", "Change positive color", "blue"),
+      hr(),
+      tags$div(class="header", checked=NA,
+        tags$p("A dataset you might be curious to explore."),
+        tags$a(href="https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/trumpspeeches.txt", "Trump's campaign speeches.")
+      ),
+      tags$br(),
+      tags$div(class="header", checked=NA,
+        tags$p("Have a CSV file for sentiment analysis?"),
+        tags$a(href="https://storybench.shinyapps.io/csvanalysis/", "Try out my other drag-and-drop app.")
+      ),
+      hr(),
+      tags$div(class="header", checked=NA,
+        tags$p("This analysis uses the R package 'tidytext' and the 'labMT' sentiment dictionary from Andy Reagan. Created by Aleszu Bajak.")
+      ) 
     ),
-  #Fin SidePannel -------------Reda------------------
-  #Début mainPannel ----------------------Daouda-------------------------
+    #Fin SidePannel -------------Reda------------------
+    #Début mainPannel ----------------------Daouda-------------------------
     mainPanel(
-      
       h4("Sentences", align = "center"),
       DTOutput("tb"),
       h4("Most negative and most positive words", align = "center"),
@@ -64,8 +63,8 @@ sidebarLayout(
       h4("Top trigrams", align = "center"),
       plotOutput("triplot")
     )
- #Fin mainPanel-------------------Daouda-----------------------------
-)
+    #Fin mainPanel-------------------Daouda-----------------------------
+  )
 )
 
 
@@ -90,60 +89,56 @@ server <- function(input, output, session) {
   })
   #-----------------Fin chargement------Armel----------------
   #Data table --------------Reda-------------
-          output$tbpos <- DT::renderDataTable({
+  output$tbpos <- DT::renderDataTable({
 
-            if (is.null(input$file)){
-              return(NULL)      
-            }
-            
-            library(dplyr)
-            library(tidyverse)
-            library(tidytext)
+    if (is.null(input$file)){
+      return(NULL)      
+    }
 
-            LookForKeyword <- c(input$keyword)
+    LookForKeyword <- c(input$keyword)
 
-            df <- filedata()
-            df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
-            
-            # tokenizedT <- df2 %>%
-            #   select(value) %>%
-            #   unnest_tokens(word, value) %>%
-            #   count(word, sort = TRUE) %>%
-            #   ungroup()
-            # tokenizedT
-            # 
-            # tokenized_rem_stopwordsT <- tokenizedT %>%
-            #   anti_join(stop_words)
-            
-            sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
-            labMT <- sentiments %>%
-              select(word, happs)
-            
-            ### Quick sentiment analysis
-            
-            allsentimentT <- df2 %>%  
-              select(value) %>%
-              unnest_tokens(word, value) %>%
-              anti_join(stop_words) %>%
-              inner_join(labMT, by = "word") %>%
-              group_by(word) %>%
-              summarize(sentiment = mean(happs)) %>%
-              arrange(desc(sentiment)) %>%
-              mutate("sentiment2" = sentiment-5.372 )
-            
-            # Bind 10 most positive terms and 10 most negative terms
-            
-            topsent <- allsentimentT %>%
-              top_n(50) 
+    df <- filedata()
+    df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
+    
+    # tokenizedT <- df2 %>%
+    #   select(value) %>%
+    #   unnest_tokens(word, value) %>%
+    #   count(word, sort = TRUE) %>%
+    #   ungroup()
+    # tokenizedT
+    # 
+    # tokenized_rem_stopwordsT <- tokenizedT %>%
+    #   anti_join(stop_words)
+    
+    sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
+    labMT <- sentiments %>%
+      select(word, happs)
+    
+    ### Quick sentiment analysis
+    
+    allsentimentT <- df2 %>%  
+      select(value) %>%
+      unnest_tokens(word, value) %>%
+      anti_join(stop_words) %>%
+      inner_join(labMT, by = "word") %>%
+      group_by(word) %>%
+      summarize(sentiment = mean(happs)) %>%
+      arrange(desc(sentiment)) %>%
+      mutate("sentiment2" = sentiment-5.372 )
+    
+    # Bind 10 most positive terms and 10 most negative terms
+    
+    topsent <- allsentimentT %>%
+      top_n(50) 
 
-            DT::datatable(topsent)
-            
-            # wcT <- wordcloud(words = tokenized_rem_stopwordsT$word, freq = tokenized_rem_stopwordsT$n, min.freq = 1,
-            #                  max.words=100, random.order=FALSE, rot.per=0.15,
-            #                  colors=brewer.pal(8, "RdGy"))
-            # wcT
+    DT::datatable(topsent)
+    
+    # wcT <- wordcloud(words = tokenized_rem_stopwordsT$word, freq = tokenized_rem_stopwordsT$n, min.freq = 1,
+    #                  max.words=100, random.order=FALSE, rot.per=0.15,
+    #                  colors=brewer.pal(8, "RdGy"))
+    # wcT
 
-          })
+  })
           
   ##--------Fin Data table--------Reda
   ##----------Data table -----------Armel--------------------
@@ -197,10 +192,6 @@ server <- function(input, output, session) {
       return(NULL)      
     }
     
-    library(dplyr)
-    library(tidyverse)
-    library(tidytext)
-    
     LookForKeyword <- c(input$keyword)
     
     df <- filedata()
@@ -208,7 +199,7 @@ server <- function(input, output, session) {
     
     sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
     labMT <- sentiments %>%
-      select(word, happs)
+    select(word, happs)
     
     ### Quick sentiment analysis
     
@@ -234,15 +225,14 @@ server <- function(input, output, session) {
     sentimentT
     
     p_sentT <- ggplot(sentimentT, aes(x= reorder(word, -sentiment2), 
-                                      y = sentiment2, 
-                                      fill = sentiment2 > 0)) + #this is midpoint of labMT sentiment dictionary
+      y = sentiment2, 
+      fill = sentiment2 > 0)) + #this is midpoint of labMT sentiment dictionary
       geom_col(show.legend = FALSE) +
       coord_flip() +
       ylab("sentiment") +
       xlab("word") + 
       scale_y_continuous(limits=c(-5, 5)) +
       scale_fill_manual(values=c(input$neg,input$pos))
-    
     p_sentT
     
   })
@@ -265,7 +255,6 @@ server <- function(input, output, session) {
       unnest_tokens(ngram, value, token = "ngrams", n = 2) %>%
       count(ngram, sort = TRUE) %>%
       ungroup()
-
     DT::datatable(bigrams)
   })  
   # Fin data table--------------------Armel--------------------------------
@@ -275,11 +264,6 @@ server <- function(input, output, session) {
     if (is.null(input$file)){
       return(NULL)      
     }
-    
-    library(dplyr)
-    library(tidyverse)
-    library(tidytext)
-    library(wordcloud)
     
     LookForKeyword <- c(input$keyword)
     
@@ -298,7 +282,6 @@ server <- function(input, output, session) {
       coord_flip() +
       ylab("frequency") +
       xlab("ngram")
-    
     p7
     
   })
@@ -314,11 +297,6 @@ server <- function(input, output, session) {
     if (is.null(input$file)){
       return(NULL)      
     }
-    
-    library(dplyr)
-    library(tidyverse)
-    library(tidytext)
-    library(wordcloud)
     
     LookForKeyword <- c(input$keyword)
     
@@ -368,4 +346,3 @@ server <- function(input, output, session) {
 
 #Partie ui
 shinyApp(ui = ui, server = server)
-
