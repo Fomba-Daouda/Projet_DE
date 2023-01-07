@@ -12,7 +12,8 @@ ui <- fluidPage(
   theme = shinythemes::shinytheme("journal"),  
   titlePanel("Drag-and-drop textual analysis"),
   tags$div(class="header", checked=NA,
-    tags$p("Upload a text file and choose a keyword below to run an exploratory textual and sentiment analysis")),
+    tags$p("Upload a text file and choose a keyword below to run an exploratory textual and sentiment analysis")
+  ),
   hr(),
   sidebarLayout(
     # Sidebar with a slider and selection inputs
