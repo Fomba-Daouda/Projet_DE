@@ -72,13 +72,14 @@ ui <- dashboardPage(skin="green",
           tabPanel(
             "Analyse des sentiments",
             wellPanel(
+              tags$h4("Dans cette partie, nous faisons une analyse de sentiments en fonction du fichier donnée au programme !", style="color: violet"),
               fluidRow(
                 box(width = 3,
                   ## SidePannel--------------------Reda-----------------------
                   sidebarPanel(width=12,
                     fileInput("file", "Téléchargez votre fichier txt/csv, vous pouvez glisser-déposer"),
                     hr(),
-                    textInput("keyword", "Rechercher un mot-clé", ""),
+                    textInput("keyword", "Rechercher un mot-clé (positif/négatif)", ""),
                     hr(),
                     tags$div(class="header", checked=NA,
                       tags$p("Une fois que vous avez téléchargé un document, faites défiler vers le bas pour voir les phrases contextuelles, l'analyse des sentiments et les principaux bi- et trigrammes.")
@@ -125,6 +126,16 @@ ui <- dashboardPage(skin="green",
             fluidRow(
               box(width = 12,
                 wellPanel(
+                  tags$h4("
+                    Dans cette partie, nous entraînons un modèle d'analyse des sentiments pour classer les critiques de films comme positives ou négatives , en fonction du texte de la critique.", style="color: royalblue"
+                  ),
+                  tags$h4("
+                    Il s'agit d'un exemple de classification binaire - ou à deux classes -, un type de problème d'apprentissage automatique important et largement applicable.", style="color: royalblue"
+                  ),
+                  tags$h4("Nous utiliserons l' ensemble de données Large Movie Review qui contient le texte de 50 000 critiques de films de la base de données de films Internet.", style="color: royalblue"),
+                  tags$h4("Ceux-ci sont divisés en 25 000 avis pour la formation et 25 000 avis pour les tests. 
+                    Les ensembles de formation et de test sont équilibrés , ce qui signifie qu'ils contiennent un nombre égal d'avis positifs et négatifs.", style="color: royalblue"
+                  )
                 )
               )
             )
@@ -416,6 +427,12 @@ server <- function(input, output, session) {
     
   })
   #Fin trigrams -------------Armel----
+
+
+
+
+  #------------Ajout du modèle Début--------------#
+  #------------Ajout du modèle Fin--------------#
 }
 
 #Partie ui
