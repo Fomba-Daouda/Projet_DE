@@ -1,5 +1,8 @@
 ## Installation des libraries
 
+library(shiny)
+library(shinydashboard)
+library(flexdashboard)
 library(shinythemes)
 library(tidyverse)
 library(DT)
@@ -11,59 +14,130 @@ library(keras)
 library(tfdatasets)
 
 ## Début de l'interface
-ui <- fluidPage(
-  theme = shinythemes::shinytheme("journal"),  
-  titlePanel("Analyse textuelle"),
-  tags$div(class="header", checked=NA,
-    tags$p("Téléchargez un fichier texte/csv et choisissez un mot-clé ci-dessous pour exécuter une analyse exploratoire du texte et des sentiments")
-  ),
-  hr(),
-  sidebarLayout(
-    # Sidebar with a slider and selection inputs
-    ## SidePannel--------------------Reda-----------------------
-    sidebarPanel(
-      fileInput("file", "Téléchargez votre fichier txt/csv, vous pouvez glisser-déposer"),
-      hr(),
-      textInput("keyword", "Rechercher un mot-clé", ""),
-      hr(),
-      tags$div(class="header", checked=NA,
-        tags$p("Une fois que vous avez téléchargé un document, faites défiler vers le bas pour voir les phrases contextuelles, l'analyse des sentiments et les principaux bi- et trigrammes.")
-      ),
-      hr(),
-      textInput("neg", "Changer la couleur négative", "red"),
-      hr(),
-      textInput("pos", "Changer la couleur positive", "blue"),
-      hr(),
-      tags$br(),
-      hr(),
-      #tags$div(class="header", checked=NA,
-        #tags$p("This analysis uses the R package 'tidytext' and the 'labMT' sentiment dictionary from Andy Reagan. Created by Aleszu Bajak.")
-      #) 
+
+
+
+
+
+ui <- dashboardPage(skin="green",
+  dashboardHeader(title="PROJET DATA ENGINEERING"),
+  dashboardSidebar
+    (title = "Menu",
+       sidebarMenu(
+         #menuItem("Gérer les origines", tabName = "raw", icon = icon("table")),
+         menuItem("Gérer les déclarations", tabName = "dash", icon = icon("fas fa-chart-bar"))
+         #menuItem("Apprentissage", tabName = "app", icon = icon("chart-pie"))#nawel onglet
+         
+         
+         #menuItem("Education", tabName = "education", icon = icon("mortar-board")),
+         #menuItem("Gender", tabName = "gender", icon = icon("intersex")),
+         #menuItem("Job-Satisfaction", tabName = "satisfaction", icon = icon("smile-o")),
+         #menuItem("year_company", tabName = "year", icon = icon("handshake-o"))
+         
+       )
     ),
-    #Fin SidePannel -------------Reda------------------
-    #Début mainPannel ----------------------Daouda-------------------------
-    mainPanel(
-      h4("Sentences", align = "center"),
-      DTOutput("tb"),
-      h4("Les mots les plus négatifs et les plus positifs", align = "center"),
-      plotOutput("p_sentT"),
-      h4("Top 50 des mots positifs", align = "center"),
-      DTOutput("tbpos"),
-      h4("Top 50 des mots négatifs", align = "center"),
-      DTOutput("tbneg"),
-      h4("Top bigrams", align = "center"),
-      DTOutput("bigramsT"),
-      h4("Top bigrams", align = "center"),
-      plotOutput("biplot"),
-      h4("Top trigrams", align = "center"),
-      DTOutput("trigramsT"),
-      h4("Top trigrams", align = "center"),
-      plotOutput("triplot"),
-      h4("Nuage de mots", align = "center"),
-      plotOutput("nuage")
-      
+  dashboardBody(
+    tags$head(
+      tags$style(
+        HTML('
+          /* logo */
+          .skin-green .main-header .logo {
+            background-color: #073d60;
+            color: #fff;
+            border-bottom: 0 solid transparent;
+          }
+          .skin-blue .main-header .logo {
+            background-color: #f4b943;
+          }
+          .skin-green .main-header .navbar {
+            background-color: #03787c;
+          }
+          .skin-green .left-side, .skin-green .main-sidebar, .skin-green .wrapper {
+            background-color: #073d60;
+          }
+          .skin-green .sidebar-menu>li.active>a, .skin-green .sidebar-menu>li:hover>a {
+            color: #fff;
+            background: #03787c;
+            border-left-color: #00a65a;
+          }
+          div#output_signataire {
+            color: red;
+            text-align: center;
+          }'
+        )
+      )
+    ),
+    tags$div(class="header", checked=NA,
+      tags$p("Téléchargez un fichier texte/csv et choisissez un mot-clé ci-dessous pour exécuter une analyse exploratoire du texte et des sentiments")
+    ),
+    hr(),
+    #Display datasets
+    tabItem(tabName = "dash",
+      fluidRow(
+        tabsetPanel(
+          tabPanel(
+            "Analyse des sentiments",
+            wellPanel(
+              fluidRow(
+                box(width = 3,
+                  ## SidePannel--------------------Reda-----------------------
+                  sidebarPanel(width=12,
+                    fileInput("file", "Téléchargez votre fichier txt/csv, vous pouvez glisser-déposer"),
+                    hr(),
+                    textInput("keyword", "Rechercher un mot-clé", ""),
+                    hr(),
+                    tags$div(class="header", checked=NA,
+                      tags$p("Une fois que vous avez téléchargé un document, faites défiler vers le bas pour voir les phrases contextuelles, l'analyse des sentiments et les principaux bi- et trigrammes.")
+                    ),
+                    hr(),
+                    textInput("neg", "Changer la couleur négative", "red"),
+                    hr(),
+                    textInput("pos", "Changer la couleur positive", "blue"),
+                    hr(),
+                    tags$br(),
+                    hr()
+                  ),
+                  #Fin SidePannel -------------Reda------------------
+                ),
+                box(width = 9,
+                  #Début mainPannel ----------------------Daouda-------------------------
+                  mainPanel(width=12,
+                    h4("Sentences", align = "center"),
+                    DTOutput("tb"),
+                    h4("Les mots les plus négatifs et les plus positifs", align = "center"),
+                    plotOutput("p_sentT"),
+                    h4("Top 50 des mots positifs", align = "center"),
+                    DTOutput("tbpos"),
+                    h4("Top 50 des mots négatifs", align = "center"),
+                    DTOutput("tbneg"),
+                    h4("Top bigrams", align = "center"),
+                    DTOutput("bigramsT"),
+                    h4("Top bigrams", align = "center"),
+                    plotOutput("biplot"),
+                    h4("Top trigrams", align = "center"),
+                    DTOutput("trigramsT"),
+                    h4("Top trigrams", align = "center"),
+                    plotOutput("triplot"),
+                    h4("Nuage de mots", align = "center"),
+                    plotOutput("nuage")
+                  )
+                  #Fin mainPanel-------------------Daouda-----------------------------
+                )
+              )
+            )
+          ),
+          tabPanel(
+            "Modèle de machine learning",
+            fluidRow(
+              box(width = 12,
+                wellPanel(
+                )
+              )
+            )
+          )
+        )
+      )
     )
-    #Fin mainPanel-------------------Daouda-----------------------------
   )
 )
 
