@@ -12,7 +12,6 @@ library(wordcloud)
 library(tensorflow)
 library(keras)
 library(tfdatasets)
-
 ## Début de l'interface
 
 
@@ -170,7 +169,7 @@ server <- function(input, output, session) {
     df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
     
     tokenizedT <- df2 %>%
-      select(value) %>%
+      dplyr::select(value) %>%
       unnest_tokens(word, value) %>%
       count(word, sort = TRUE) %>%
       ungroup()
@@ -181,17 +180,17 @@ server <- function(input, output, session) {
     
     sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
     labMT <- sentiments %>%
-      select(word, happs)
+    dplyr::select(word, happs)
     
     ### Quick sentiment analysis
     
     allsentimentT <- df2 %>%  
-      select(value) %>%
+      dplyr::select(value) %>%
       unnest_tokens(word, value) %>%
       anti_join(stop_words) %>%
       inner_join(labMT, by = "word") %>%
       group_by(word) %>%
-      summarize(sentiment = mean(happs)) %>%
+      dplyr::summarize(sentiment = mean(happs)) %>%
       arrange(desc(sentiment)) %>%
       mutate("sentiment2" = sentiment-5.372 )
     
@@ -229,7 +228,7 @@ server <- function(input, output, session) {
     df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
     
     tokenizedT <- df2 %>%
-      select(value) %>%
+      dplyr::select(value) %>%
       unnest_tokens(word, value) %>%
       count(word, sort = TRUE) %>%
       ungroup()
@@ -240,17 +239,17 @@ server <- function(input, output, session) {
 
     sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
     labMT <- sentiments %>%
-      select(word, happs)
+    dplyr::select(word, happs)
     
     ### Quick sentiment analysis
     
     allsentimentT <- df2 %>%
-      select(value) %>%
+      dplyr::select(value) %>%
       unnest_tokens(word, value) %>%
       anti_join(stop_words) %>%
       inner_join(labMT, by = "word") %>%
       group_by(word) %>%
-      summarize(sentiment = mean(happs)) %>%
+      dplyr::summarize(sentiment = mean(happs)) %>%
       arrange(desc(sentiment)) %>%
       mutate("sentiment2" = sentiment-5.372 )
     
@@ -274,17 +273,17 @@ server <- function(input, output, session) {
     
     sentiments <- read.csv("https://raw.githubusercontent.com/aleszu/textanalysis-shiny/master/labMT2english.csv", sep="\t")
     labMT <- sentiments %>%
-    select(word, happs)
+    dplyr::select(word, happs)
     
     ### Quick sentiment analysis
     
     allsentimentT <- df2 %>%  
-      select(value) %>%
+      dplyr::select(value) %>%
       unnest_tokens(word, value) %>%
       anti_join(stop_words) %>%
       inner_join(labMT, by = "word") %>%
       group_by(word) %>%
-      summarize(sentiment = mean(happs)) %>%
+      dplyr::summarize(sentiment = mean(happs)) %>%
       arrange(desc(sentiment)) %>%
       mutate("sentiment2" = sentiment-5.372 )
     
@@ -326,7 +325,7 @@ server <- function(input, output, session) {
     df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
     
     bigrams <- df2 %>%
-      select(value) %>%
+      dplyr::select(value) %>%
       unnest_tokens(ngram, value, token = "ngrams", n = 2) %>%
       count(ngram, sort = TRUE) %>%
       ungroup()
@@ -346,7 +345,7 @@ server <- function(input, output, session) {
     df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
     
     bigrams_15 <- df2 %>%
-      select(value) %>%
+      dplyr::select(value) %>%
       unnest_tokens(ngram, value, token = "ngrams", n = 2) %>%
       count(ngram, sort = TRUE) %>%
       ungroup() %>%
@@ -379,7 +378,7 @@ server <- function(input, output, session) {
     df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
     
     trigrams <- df2 %>%
-      select(value) %>%
+      dplyr::select(value) %>%
       unnest_tokens(ngram, value, token = "ngrams", n = 3) %>%
       count(ngram, sort = TRUE) %>%
       ungroup()
@@ -402,7 +401,7 @@ server <- function(input, output, session) {
     df2 <- tbl_df(df[grep(paste(LookForKeyword, collapse="|"),df)])
 
     trigrams_15 <- df2 %>%
-      select(value) %>%
+      dplyr::select(value) %>%
       unnest_tokens(ngram, value, token = "ngrams", n = 3) %>%
       count(ngram, sort = TRUE) %>%
       ungroup() %>%
