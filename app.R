@@ -23,18 +23,9 @@ ui <- dashboardPage(skin="green",
   dashboardHeader(title="PROJET DATA ENGINEERING"),
   dashboardSidebar
     (title = "Menu",
-       sidebarMenu(
-         #menuItem("Gérer les origines", tabName = "raw", icon = icon("table")),
-         menuItem("Gérer les déclarations", tabName = "dash", icon = icon("fas fa-chart-bar"))
-         #menuItem("Apprentissage", tabName = "app", icon = icon("chart-pie"))#nawel onglet
-         
-         
-         #menuItem("Education", tabName = "education", icon = icon("mortar-board")),
-         #menuItem("Gender", tabName = "gender", icon = icon("intersex")),
-         #menuItem("Job-Satisfaction", tabName = "satisfaction", icon = icon("smile-o")),
-         #menuItem("year_company", tabName = "year", icon = icon("handshake-o"))
-         
-       )
+      sidebarMenu(
+        menuItem("Sentiments analysis", tabName = "dash", icon = icon("fas fa-chart-bar"))
+      )
     ),
   dashboardBody(
     tags$head(
@@ -68,7 +59,11 @@ ui <- dashboardPage(skin="green",
       )
     ),
     tags$div(class="header", checked=NA,
-      tags$p("Téléchargez un fichier texte/csv et choisissez un mot-clé ci-dessous pour exécuter une analyse exploratoire du texte et des sentiments")
+      theme = shinythemes::shinytheme("journal"),  
+      titlePanel("Analyse textuelle"),
+      tags$div(class="header", checked=NA,
+        tags$h4("Téléchargez un fichier texte/csv et choisissez un mot-clé ci-dessous pour exécuter une analyse exploratoire du texte et des sentiments")
+      )
     ),
     hr(),
     #Display datasets
