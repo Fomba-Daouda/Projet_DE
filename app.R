@@ -483,6 +483,41 @@ server <- function(input, output, session) {
     batch_size = batch_size
   )
 
+  #Préparer l'ensemble de données pour l'entraînement
+  # creating a regex with all punctuation characters for replacing.
+
+  #layer_text_vectorization
+  re <- reticulate::import("re")
+
+  punctuation <- c("!", "\\", "\"", "#", "$", "%", "&", "'", "(", ")", "*",
+  "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[",
+  "\\", "\\", "]", "^", "_", "`", "{", "|", "}", "~")
+
+  punctuation_group <- punctuation %>%
+    sapply(re$escape) %>%
+    paste0(collapse = "") %>%
+    sprintf("[%s]", .)
+
+  custom_standardization <- function(input_data) {
+    lowercase <- tf$strings$lower(input_data)
+    stripped_html <- tf$strings$regex_replace(lowercase, '<br />', ' ')
+    tf$strings$regex_replace(
+      stripped_html,
+      punctuation_group,
+      ""
+    )
+  }
+
+  max_features <- 10000
+  sequence_length <- 250
+
+  vectorize_layer <- layer_text_vectorization(
+    standardize = custom_standardization,
+    max_tokens = max_features,
+    output_mode = "int",
+    output_sequence_length = sequence_length
+  )
+
   #------------Ajout du modèle Fin--------------#
 }
 
