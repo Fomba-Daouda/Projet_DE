@@ -432,6 +432,21 @@ server <- function(input, output, session) {
 
 
   #------------Ajout du modèle Début--------------#
+
+  #Téléchargez et explorez le jeu de données IMDB
+  url <- "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
+
+  dataset <- get_file(
+    "aclImdb_v1",
+    url,
+    untar = TRUE,
+    cache_dir = '.',
+    cache_subdir = ''
+  )
+
+  dataset_dir <- file.path("aclImdb")
+
+  print(list.files(dataset_dir))
   #------------Ajout du modèle Fin--------------#
 }
 
