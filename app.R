@@ -122,7 +122,7 @@ ui <- dashboardPage(skin="green",
             )
           ),
           tabPanel(
-            "Modèle de machine learning",
+            "ML avec Tensorflow(Keras)",
             fluidRow(
               box(width = 12,
                 wellPanel(
@@ -133,7 +133,7 @@ ui <- dashboardPage(skin="green",
                     Il s'agit d'un exemple de classification binaire - ou à deux classes -, un type de problème d'apprentissage automatique important et largement applicable.", style="color: royalblue"
                   ),
                   tags$h4("Nous utiliserons l' ensemble de données Large Movie Review qui contient le texte de 50 000 critiques de films de la base de données de films Internet.", style="color: royalblue"),
-                  tags$h4("Ceux-ci sont divisés en 25 000 avis pour la formation et 25 000 avis pour les tests. 
+                  tags$h4("Ceux-ci sont divisés en 25 000 avis pour l'entraînement et 25 000 avis pour les tests. 
                     Les ensembles de formation et de test sont équilibrés , ce qui signifie qu'ils contiennent un nombre égal d'avis positifs et négatifs.", style="color: royalblue"
                   )
                 )
@@ -447,6 +447,42 @@ server <- function(input, output, session) {
   dataset_dir <- file.path("aclImdb")
 
   print(list.files(dataset_dir))
+
+  #Les répertoires aclImdb/train/poset aclImdb/train/negcontiennent de nombreux fichiers texte,
+  #dont chacun est une critique de film unique. Jetons un coup d'œil à l'un d'eux.
+
+
+  #Créons un ensemble de validation en utilisant une répartition 80:20 des données d'apprentissage.
+  batch_size <- 32
+  seed <- 42
+
+  raw_train_ds <- text_dataset_from_directory(
+    'aclImdb/train',
+    batch_size = batch_size,
+    validation_split = 0.2,
+    subset = 'training',
+    seed = seed
+  )
+
+  batch <- raw_train_ds %>%
+  reticulate::as_iterator() %>%
+  coro::collect(n = 1)
+
+  #print(batch[[1]][[1]][1])
+
+  raw_val_ds <- text_dataset_from_directory(
+    'aclImdb/train',
+    batch_size = batch_size,
+    validation_split = 0.2,
+    subset = 'validation',
+    seed = seed
+  )
+
+  raw_test_ds <- text_dataset_from_directory(
+    'aclImdb/test',
+    batch_size = batch_size
+  )
+
   #------------Ajout du modèle Fin--------------#
 }
 
