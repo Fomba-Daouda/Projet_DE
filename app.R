@@ -12,6 +12,8 @@ library(wordcloud)
 library(tensorflow)
 library(keras)
 library(tfdatasets)
+library("data.table")
+library(DataExplorer)
 ## Début de l'interface
 
 
@@ -159,6 +161,28 @@ ui <- dashboardPage(skin="green",
                   )
                 )
               )
+              #Kmeans
+              # wellPanel(
+              #   box(width = 12,
+              #     column(12,
+              #      column(5,
+              #       box(width = 12, title = "Exploratory Analysis",
+              #         verbatimTextOutput("plotData")
+              #       )
+              #      ),
+              #      column(3,
+              #       box(width = 12, title = "Évaluer le modèle",
+              #         verbatimTextOutput("evaluate")
+              #       )
+              #      ),
+              #      column(4,
+              #       box(width = 12, title = "Graphe de précision et de perte au fil du temps",
+              #         plotOutput("precision")
+              #       )
+              #      )
+              #     )
+              #   )
+              # )
             )
           )
         )
@@ -628,8 +652,31 @@ server <- function(input, output, session) {
 
   # Test it with `raw_test_ds`, which yields raw strings
   export_model %>% evaluate(raw_test_ds)
+  
+  examples <- c(
+    "The movie was great!",
+    "The movie was okay.",
+    "The movie was terrible..."
+  )
+  
+  print(predict(export_model, examples))
 
   #------------Ajout du modèle Fin--------------#
+
+
+
+  #KMEANS RESTAURANT
+
+  # GET DATA
+  # reviews_df<-fread('reviews.csv',encoding='UTF-8')
+  # reviews_if<-fread('preprocessed_text.csv',encoding='UTF-8') 
+  # reviews_df<-merge(reviews_df,reviews_if,by='id_review') #I preprocessed the text feature in https://www.kaggle.com/lazaro97/sentiment-geospatial-analysis. (Upadte: Removing english words)
+  # restaurants_df<-fread('restaurants.csv',encoding='UTF-8')
+  # nrc<-fread('lexico_nrc.csv', encoding = "UTF-8")
+  # 
+  # plot_missing(restaurants_df)
+  # row.names(restaurants_df)<-restaurants_df$id
+  # restaurants_df<-restaurants_df%>%select(-IDDIST,-min_price,-max_price,-platform)
 }
 
 #Partie ui
