@@ -13,13 +13,15 @@ library(tensorflow)
 library(keras)
 library(tfdatasets)
 library(coro)
+library(shinycssloaders) #library for spinner
 #library("data.table")
 #library(DataExplorer)
 ## Début de l'interface
 
 
 
-
+# Options for Spinner
+options(spinner.color="#03787c", spinner.color.background="#ffffff", spinner.size=2)
 
 ui <- dashboardPage(skin="green",
   dashboardHeader(title="PROJET DATA ENGINEERING"),
@@ -143,6 +145,9 @@ ui <- dashboardPage(skin="green",
               ),
               wellPanel(
                 box(width = 12,
+                  column(12, style="color: green; text-align: center",
+                    textOutput("loading")
+                  ),
                   column(12,
                     column(5,
                       box(width = 12, title = "Paramètres du réseau de neurones",
@@ -156,7 +161,7 @@ ui <- dashboardPage(skin="green",
                     ),
                     column(4,
                       box(width = 12, title = "Graphe de précision et de perte au fil du temps",
-                        plotOutput("precision")
+                        withSpinner(plotOutput("precision"), type = 5)
                       )
                     )
                   )
@@ -189,6 +194,10 @@ ui <- dashboardPage(skin="green",
 
 #Ajout partie serveur
 server <- function(input, output, session) {
+  
+  output$loading <- renderText({ 
+    paste("Veuillez patientez pendant que nous préparons le modèle...")
+  })
 
   # Chargement du dataset------------------Armel--------- 
   filedata <- reactive({
@@ -645,6 +654,10 @@ server <- function(input, output, session) {
   output$precision <- renderPlot({
     plot(history)
   })
+  
+  output$loading <- renderText({ 
+    paste("Le modèle est maintenant prêt!")
+  })
 
   plot(history)
 
@@ -671,7 +684,9 @@ server <- function(input, output, session) {
   
   observeEvent(input$new_text_to_predict, {
     comment <- input$new_text_to_predict
-    if(!is.null(comment) && comment != " "){
+    print(comment)
+    print(is.na(comment))
+    if(!is.null(comment) && comment != " " && comment != ""){
       pred_result <- predict(export_model, c(as.character(comment)))
       
       output$prediction <- renderText({ 
