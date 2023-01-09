@@ -685,10 +685,8 @@ server <- function(input, output, session) {
   observeEvent(input$new_text_to_predict, {
     comment <- input$new_text_to_predict
     print(comment)
-    print(is.na(comment))
     if(!is.null(comment) && comment != " " && comment != ""){
       pred_result <- predict(export_model, c(as.character(comment)))
-      
       output$prediction <- renderText({ 
         paste("Votre commentaire appartient à la classe 1 (Commentaire positif) avec une probabilité de: ", as.character(pred_result))
       })
