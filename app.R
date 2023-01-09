@@ -12,8 +12,9 @@ library(wordcloud)
 library(tensorflow)
 library(keras)
 library(tfdatasets)
-library("data.table")
-library(DataExplorer)
+library(coro)
+#library("data.table")
+#library(DataExplorer)
 ## Début de l'interface
 
 
@@ -160,29 +161,23 @@ ui <- dashboardPage(skin="green",
                     )
                   )
                 )
-              )
-              #Kmeans
-              # wellPanel(
-              #   box(width = 12,
-              #     column(12,
-              #      column(5,
-              #       box(width = 12, title = "Exploratory Analysis",
-              #         verbatimTextOutput("plotData")
-              #       )
-              #      ),
-              #      column(3,
-              #       box(width = 12, title = "Évaluer le modèle",
-              #         verbatimTextOutput("evaluate")
-              #       )
-              #      ),
-              #      column(4,
-              #       box(width = 12, title = "Graphe de précision et de perte au fil du temps",
-              #         plotOutput("precision")
-              #       )
-              #      )
-              #     )
-              #   )
-              # )
+              ),
+             wellPanel(
+               box(width = 12,
+                 column(12,
+                  column(6,
+                   box(width = 12, title = "Entrez un commentaire dont vous aimerez prédire sa classe",
+                      textInput("new_text_to_predict", label = NULL, placeholder = "Entrez un commentaire en anglais")
+                   )
+                  ),
+                  column(6,
+                   box(width = 12, title = "Nature de votre commentaire !", style="text-align: center; color: firebrick; font-weight: bold;",
+                      textOutput("prediction")
+                   )
+                  )
+                 )
+               )
+             )
             )
           )
         )
@@ -479,19 +474,28 @@ server <- function(input, output, session) {
   #------------Ajout du modèle Début--------------#
 
   #Téléchargez et explorez le jeu de données IMDB
-  url <- "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
-
-  dataset <- get_file(
-    "aclImdb_v1",
-    url,
-    untar = TRUE,
-    cache_dir = '.',
-    cache_subdir = ''
-  )
+  # url <- "https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz"
+  # 
+  # dataset <- get_file(
+  #   "aclImdb_v1",
+  #   url,
+  #   untar = TRUE,
+  #   cache_dir = '.',
+  #   cache_subdir = ''
+  # )
 
   dataset_dir <- file.path("aclImdb")
 
-  print(list.files(dataset_dir))
+  list.files(dataset_dir)
+  
+  train_dir <- file.path(dataset_dir, 'train')
+  list.files(train_dir)
+  
+  sample_file <- file.path(train_dir, 'pos/1181_9.txt')
+  readr::read_file(sample_file)
+  
+  remove_dir <- file.path(train_dir, 'unsup')
+  unlink(remove_dir, recursive = TRUE)
 
   #Les répertoires aclImdb/train/poset aclImdb/train/negcontiennent de nombreux fichiers texte,
   #dont chacun est une critique de film unique. Jetons un coup d'œil à l'un d'eux.
@@ -500,7 +504,7 @@ server <- function(input, output, session) {
   #Créons un ensemble de validation en utilisant une répartition 80:20 des données d'apprentissage.
   batch_size <- 32
   seed <- 42
-
+  
   raw_train_ds <- text_dataset_from_directory(
     'aclImdb/train',
     batch_size = batch_size,
@@ -510,10 +514,10 @@ server <- function(input, output, session) {
   )
 
   batch <- raw_train_ds %>%
-  reticulate::as_iterator() %>%
-  coro::collect(n = 1)
-
-  #print(batch[[1]][[1]][1])
+    reticulate::as_iterator() %>%
+    coro::collect(n = 1)
+  
+  batch[[1]][[1]][1]
 
   raw_val_ds <- text_dataset_from_directory(
     'aclImdb/train',
@@ -532,17 +536,18 @@ server <- function(input, output, session) {
   # creating a regex with all punctuation characters for replacing.
 
   #layer_text_vectorization
+  # creating a regex with all punctuation characters for replacing.
   re <- reticulate::import("re")
-
+  
   punctuation <- c("!", "\\", "\"", "#", "$", "%", "&", "'", "(", ")", "*",
-  "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[",
-  "\\", "\\", "]", "^", "_", "`", "{", "|", "}", "~")
-
+                   "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[",
+                   "\\", "\\", "]", "^", "_", "`", "{", "|", "}", "~")
+  
   punctuation_group <- punctuation %>%
     sapply(re$escape) %>%
     paste0(collapse = "") %>%
     sprintf("[%s]", .)
-
+  
   custom_standardization <- function(input_data) {
     lowercase <- tf$strings$lower(input_data)
     stripped_html <- tf$strings$regex_replace(lowercase, '<br />', ' ')
@@ -552,10 +557,10 @@ server <- function(input, output, session) {
       ""
     )
   }
-
+  
   max_features <- 10000
   sequence_length <- 250
-
+  
   vectorize_layer <- layer_text_vectorization(
     standardize = custom_standardization,
     max_tokens = max_features,
@@ -578,6 +583,9 @@ server <- function(input, output, session) {
     reticulate::iter_next()
   first_review <- as.array(batch[[1]][1])
   first_label <- as.array(batch[[2]][1])
+  print(vectorize_text(first_review, first_label))
+  
+  #cat("Review:\n", first_review)
   #print(vectorize_text(first_review, first_label))
 
   train_ds <- raw_train_ds %>% dataset_map(vectorize_text)
@@ -585,7 +593,7 @@ server <- function(input, output, session) {
   test_ds <- raw_test_ds %>% dataset_map(vectorize_text)
 
   AUTOTUNE <- tf$data$AUTOTUNE
-
+  
   train_ds <- train_ds %>%
     dataset_cache() %>%
     dataset_prefetch(buffer_size = AUTOTUNE)
@@ -598,12 +606,14 @@ server <- function(input, output, session) {
 
   #Créer le modèle
   embedding_dim <- 16
+  
   model <- keras_model_sequential() %>%
-  layer_embedding(max_features + 1, embedding_dim) %>%
-  layer_dropout(0.2) %>%
-  layer_global_average_pooling_1d() %>%
-  layer_dropout(0.2) %>%
-  layer_dense(1)
+    layer_embedding(max_features + 1, embedding_dim) %>%
+    layer_dropout(0.2) %>%
+    layer_global_average_pooling_1d() %>%
+    layer_dropout(0.2) %>%
+    layer_dense(1)
+  
   summary(model)
 
   output$summary <- renderPrint({
@@ -618,13 +628,13 @@ server <- function(input, output, session) {
   )
 
   #Former le modèle
-  epochs <- 10
+  epochs <- 15
   history <- model %>%
-  fit(
-    train_ds,
-    validation_data = val_ds,
-    epochs = epochs
-  )
+    fit(
+      train_ds,
+      validation_data = val_ds,
+      epochs = epochs
+    )
 
   #Évaluer le modèle
   model %>% evaluate(test_ds)
@@ -640,26 +650,35 @@ server <- function(input, output, session) {
 
   #Export the model
   export_model <- keras_model_sequential() %>%
-  vectorize_layer() %>%
-  model() %>%
-  layer_activation(activation = "sigmoid")
-
+    vectorize_layer() %>%
+    model() %>%
+    layer_activation(activation = "sigmoid")
+  
   export_model %>% compile(
     loss = loss_binary_crossentropy(from_logits = FALSE),
     optimizer = "adam",
     metrics = 'accuracy'
   )
-
+  
   # Test it with `raw_test_ds`, which yields raw strings
   export_model %>% evaluate(raw_test_ds)
   
-  examples <- c(
-    "The movie was great!",
-    "The movie was okay.",
-    "The movie was terrible..."
-  )
+  # examples <- c(
+  #   "The movie was great!",
+  #   "The movie was okay.",
+  #   "The movie was terrible..."
+  # )
   
-  print(predict(export_model, examples))
+  observeEvent(input$new_text_to_predict, {
+    comment <- input$new_text_to_predict
+    if(!is.null(comment) && comment != " "){
+      pred_result <- predict(export_model, c(as.character(comment)))
+      
+      output$prediction <- renderText({ 
+        paste("Votre commentaire appartient à la classe 1 (Commentaire positif) avec une probabilité de: ", as.character(pred_result))
+      })
+    }
+  })
 
   #------------Ajout du modèle Fin--------------#
 
