@@ -14,8 +14,10 @@ library(keras)
 library(tfdatasets)
 library(coro)
 library(shinycssloaders) #library for spinner
-#library("data.table")
-#library(DataExplorer)
+virtualenv_create("r-reticulate")
+conda_create("r-reticulate")
+use_condaenv("r-reticulate")
+conda_install("r-reticulate",c('keras','tensorflow'), pip = TRUE)
 ## Début de l'interface
 
 
